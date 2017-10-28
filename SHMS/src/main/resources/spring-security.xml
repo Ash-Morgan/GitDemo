@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:security="http://www.springframework.org/schema/security"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+             http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+            http://www.springframework.org/schema/security 
+            http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+            
+
+    <!--  Spring-Security 的配置 -->
+    <security:http auto-config="true" use-expressions="true">
+        <security:access-denied-handler error-page="/user/denied"/>
+        <security:intercept-url pattern="/main/common" access="hasRole('ROLE_USER')"/>
+        <security:intercept-url pattern="/main/admin" access="hasRole('ROLE_ADMIN')"/>
+        <security:intercept-url pattern="/restApi/**" access="permitAll"/>
+        <security:csrf disabled="true" />
+        <security:form-login login-page="/user/login"
+                             login-processing-url="/j_spring_security_check"
+                             authentication-failure-url="/user/login?error=true"
+                             default-target-url="/main/common"
+                             username-parameter="j_username"
+                             password-parameter="j_password"/>
+        <security:logout 
+                logout-url="/user/logout"
+                logout-success-url="/user/login" 
+                />                     
+    </security:http>
+    
+     <!-- 指定一个自定义的authentication-manager :customUserDetailsService -->
+    <security:authentication-manager>
+            <security:authentication-provider user-service-ref="customUserDetailsService">
+                    <security:password-encoder ref="passwordEncoder"/>
+            </security:authentication-provider>
+    </security:authentication-manager>
+    
+    <!-- 对密码进行MD5编码 -->
+    <bean class="org.springframework.security.authentication.encoding.Md5PasswordEncoder" id="passwordEncoder"/>
+    <bean id="customUserDetailsService" class="com.SHMS.service.CustomUserDetailsService"/>
+  
+</beans>
